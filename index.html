@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Restudio To Do</title>
+    <!-- Google Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Tiny5 Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #1e1e1e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* ========== Top Bar (Full Width) ========== */
+        .top-bar {
+            background-color: #000;
+            color: #fff;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        .top-bar img {
+            height: 40px;
+            width: auto;
+            margin-right: 12px;
+        }
+
+        .top-bar .brand-name {
+            font-family: "Tiny5", system-ui, sans-serif;
+            font-size: 28px;
+            letter-spacing: 1px;
+            color: #FFFFFF;
+        }
+
+        /* ========== Main Container ========== */
+        .container {
+            background: #252526;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            width: 450px;
+            max-width: 95%;
+            border: 1px solid #3c3c3c;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            margin-top: 80px;
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #cccccc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h1 .material-icons {
+            color: #4c9aff;
+            font-size: 28px;
+        }
+
+        /* ========== Tabs ========== */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #3c3c3c;
+            padding-bottom: 0;
+        }
+        .tab {
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 0.9rem;
+            border-radius: 8px 8px 0 0;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+            position: relative;
+            bottom: -2px;
+            border: 2px solid transparent;
+        }
+        .tab:hover {
+            color: #cccccc;
+            background: #2d2d2d;
+        }
+        .tab.active {
+            color: #4c9aff;
+            background: #252526;
+            border-color: #3c3c3c;
+            border-bottom-color: #252526;
+        }
+        .tab .material-icons {
+            font-size: 18px;
+        }
+        .tab-count {
+            background: #3c3c3c;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: #aaa;
+            min-width: 20px;
+            text-align: center;
+        }
+        .tab.active .tab-count {
+            background: #094771;
+            color: #4c9aff;
+        }
+
+        /* ========== Input Area ========== */
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+        #taskInput {
+            flex: 1;
+            padding: 12px 16px;
+            background: #3c3c3c;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #e0e0e0;
+            outline: none;
+            transition: 0.2s;
+        }
+        #taskInput::placeholder {
+            color: #aaa;
+        }
+        #taskInput:focus {
+            border-color: #007acc;
+            background: #2d2d2d;
+        }
+        #addBtn {
+            background: #0e639c;
+            color: #ffffff;
+            border: none;
+            padding: 0 16px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+        }
+        #addBtn:hover {
+            background: #1177bb;
+            transform: scale(1.03);
+        }
+        #addBtn .material-icons {
+            font-size: 24px;
+            color: #ffffff;
+        }
+
+        /* ========== Task List ========== */
+        #taskList {
+            list-style: none;
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 0.5rem;
+            padding-right: 4px;
+            min-height: 200px;
+        }
+        #taskList::-webkit-scrollbar {
+            width: 6px;
+        }
+        #taskList::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #taskList::-webkit-scrollbar-thumb {
+            background: #3c3c3c;
+            border-radius: 3px;
+        }
+        #taskList li {
+            background: #2d2d2d;
+            padding: 10px 14px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #3c3c3c;
+            transition: 0.15s;
+            gap: 10px;
+        }
+        #taskList li:hover {
+            background: #2b2b2b;
+            border-color: #4a4a4a;
+        }
+        #taskList li.empty-state {
+            background: transparent;
+            border: none;
+            justify-content: center;
+            padding: 20px 0;
+            cursor: default;
+        }
+        #taskList li.empty-state:hover {
+            background: transparent;
+            border-color: transparent;
+        }
+        .task-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+            min-width: 0;
+        }
+        .task-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .task-text {
+            font-size: 0.95rem;
+            color: #cccccc;
+            transition: 0.2s;
+            word-break: break-word;
+        }
+        .task-text.done {
+            text-decoration: line-through;
+            color: #555;
+        }
+
+        /* ========== Checkbox ========== */
+        .checkbox-wrapper-12 {
+            position: relative;
+            flex-shrink: 0;
+        }
+        .checkbox-wrapper-12 * {
+            box-sizing: border-box;
+        }
+        .checkbox-wrapper-12 .cbx {
+            width: 22px;
+            height: 22px;
+            position: relative;
+        }
+        .checkbox-wrapper-12 .cbx input {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            cursor: pointer;
+            margin: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 22px;
+            height: 22px;
+            border: 2px solid #4a4a4a;
+            border-radius: 50%;
+            background: transparent;
+            transition: border-color 0.2s ease;
+        }
+        .checkbox-wrapper-12 .cbx input:hover {
+            border-color: #4c9aff;
+        }
+        .checkbox-wrapper-12 .cbx label {
+            width: 22px;
+            height: 22px;
+            background: none;
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+        .checkbox-wrapper-12 .cbx svg {
+            position: absolute;
+            top: 4px;
+            left: 3px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .checkbox-wrapper-12 .cbx svg path {
+            stroke: #ffffff;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 19;
+            stroke-dashoffset: 19;
+            transition: stroke-dashoffset 0.3s ease;
+            transition-delay: 0.2s;
+        }
+        .checkbox-wrapper-12 .cbx input:checked + label {
+            animation: splash-12 0.6s ease forwards;
+        }
+        .checkbox-wrapper-12 .cbx input:checked + label + svg path {
+            stroke-dashoffset: 0;
+        }
+        @keyframes splash-12 {
+            40% {
+                background: #4c9aff;
+                box-shadow: 0 -16px 0 -7px #4c9aff, 14px -7px 0 -7px #4c9aff, 14px 7px 0 -7px #4c9aff, 0 16px 0 -7px #4c9aff, -14px 7px 0 -7px #4c9aff, -14px -7px 0 -7px #4c9aff;
+            }
+            100% {
+                background: #4c9aff;
+                box-shadow: 0 -32px 0 -9px transparent, 28px -14px 0 -9px transparent, 28px 14px 0 -9px transparent, 0 32px 0 -9px transparent, -28px 14px 0 -9px transparent, -28px -14px 0 -9px transparent;
+            }
+        }
+
+        /* ========== Action Buttons ========== */
+        .task-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .fav-btn, .delete-btn {
+            background: #3c3c3c;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .fav-btn {
+            color: #aaa;
+        }
+        .fav-btn:hover {
+            background: #4a4a4a;
+            color: #ffd700;
+        }
+        .fav-btn.active {
+            color: #ffd700;
+            background: #3c3c00;
+        }
+        .fav-btn .material-icons {
+            font-size: 16px;
+        }
+        .delete-btn {
+            color: #a53a3a;
+        }
+        .delete-btn:hover {
+            background: #a53a3a;
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+        .delete-btn .material-icons {
+            font-size: 16px;
+        }
+
+        /* ========== Empty State ========== */
+        .empty-state-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 20px 0;
+            width: 100%;
+        }
+        .empty-image {
+            width: 120px;
+            height: 120px;
+            opacity: 0.6;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+        .empty-text {
+            color: #555;
+            font-size: 1rem;
+            text-align: center;
+        }
+        .empty-subtext {
+            color: #4a4a4a;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        /* ========== Stats ========== */
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: auto;
+            font-size: 0.85rem;
+            color: #aaa;
+            border-top: 1px solid #3c3c3c;
+            padding-top: 12px;
+            align-items: center;
+        }
+        #clearBtn {
+            background: none;
+            border: none;
+            color: #a53a3a;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+        #clearBtn:hover {
+            background: #3c3c3c;
+            text-decoration: none;
+        }
+        #clearBtn .material-icons {
+            font-size: 18px;
+        }
+        .error-msg {
+            color: #a53a3a;
+            font-size: 0.8rem;
+            margin-top: -8px;
+            margin-bottom: 8px;
+            display: none;
+            align-items: center;
+            gap: 6px;
+        }
+        .error-msg.show {
+            display: flex;
+        }
+        .error-msg .material-icons {
+            font-size: 16px;
+        }
+        .task-count-text {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .task-count-text .material-icons {
+            font-size: 18px;
+            color: #4c9aff;
+        }
+
+        /* ========== Responsive ========== */
+        @media (max-width: 500px) {
+            .container {
+                padding: 1rem;
+                margin-top: 70px;
+            }
+            .top-bar .brand-name {
+                font-size: 20px;
+            }
+            .top-bar img {
+                height: 30px;
+            }
+            h1 {
+                font-size: 1.4rem;
+            }
+            .tab {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Full Width Top Bar - Fixed at top -->
+    <div class="top-bar">
+        <img src="https://i.postimg.cc/LXvCQ5rt/swrh-restudio.png" alt="Logo">
+        <span class="brand-name">To Do</span>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <h1>
+            <span class="material-icons">checklist</span>
+            My Tasks
+        </h1>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="all">
+                <span class="material-icons">list</span>
+                All
+                <span class="tab-count" id="allCount">0</span>
+            </button>
+            <button class="tab" data-tab="favorites">
+                <span class="material-icons">star</span>
+                Favorites
+                <span class="tab-count" id="favCount">0</span>
+            </button>
+        </div>
+
+        <!-- Input -->
+        <div class="input-area">
+            <input type="text" id="taskInput" placeholder="Add a new task..." />
+            <button type="button" id="addBtn">
+                <span class="material-icons">add</span>
+            </button>
+        </div>
+        <div id="errorMsg" class="error-msg">
+            <span class="material-icons">error_outline</span>
+            Please enter a task
+        </div>
+
+        <!-- Task List -->
+        <ul id="taskList">
+            <li class="empty-state">
+                <div class="empty-state-content">
+                    <img src="https://i.postimg.cc/dtCPWmVs/task.png" alt="No tasks" class="empty-image" />
+                    <div>
+                        <div class="empty-text">No tasks yet</div>
+                        <div class="empty-subtext">Add a new task to get started</div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+        <!-- Stats -->
+        <div class="stats">
+            <span id="taskCount" class="task-count-text">
+                <span class="material-icons">format_list_numbered</span>
+                0 tasks
+            </span>
+            <button type="button" id="clearBtn">
+                <span class="material-icons">delete_sweep</span>
+                Clear All
+            </button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // --- Data ---
+            let tasks = [];
+            let currentTab = 'all';
+
+            // --- DOM Elements ---
+            const taskList = document.getElementById('taskList');
+            const taskInput = document.getElementById('taskInput');
+            const addBtn = document.getElementById('addBtn');
+            const taskCount = document.getElementById('taskCount');
+            const clearBtn = document.getElementById('clearBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            const tabs = document.querySelectorAll('.tab');
+            const allCount = document.getElementById('allCount');
+            const favCount = document.getElementById('favCount');
+
+            // --- Load Data ---
+            function loadData() {
+                try {
+                    const storedTasks = localStorage.getItem('quickTodos');
+                    if (storedTasks) {
+                        tasks = JSON.parse(storedTasks);
+                        if (!Array.isArray(tasks)) tasks = [];
+                    }
+                } catch (e) {
+                    console.warn('Failed to load data.', e);
+                    tasks = [];
+                }
+            }
+
+            function saveTasks() {
+                try {
+                    localStorage.setItem('quickTodos', JSON.stringify(tasks));
+                } catch (e) {
+                    console.warn('Failed to save tasks.', e);
+                }
+            }
+
+            // --- Filter Tasks ---
+            function getFilteredTasks() {
+                let filtered = [...tasks];
+
+                if (currentTab === 'favorites') {
+                    filtered = filtered.filter(t => t.favorite);
+                }
+
+                return filtered;
+            }
+
+            // --- Create Checkbox ---
+            function createCheckbox(task, onChange) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'checkbox-wrapper-12';
+                
+                const cbx = document.createElement('div');
+                cbx.className = 'cbx';
+                
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.checked = task.done;
+                input.addEventListener('change', function(e) {
+                    e.stopPropagation();
+                    onChange();
+                });
+                
+                const label = document.createElement('label');
+                
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('width', '15');
+                svg.setAttribute('height', '14');
+                svg.setAttribute('viewBox', '0 0 15 14');
+                svg.setAttribute('fill', 'none');
+                
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', 'M2 8.36364L6.23077 12L13 2');
+                
+                svg.appendChild(path);
+                cbx.appendChild(input);
+                cbx.appendChild(label);
+                cbx.appendChild(svg);
+                wrapper.appendChild(cbx);
+                
+                return wrapper;
+            }
+
+            // --- Render ---
+            function render() {
+                taskList.innerHTML = '';
+                const filteredTasks = getFilteredTasks();
+
+                const totalUndone = tasks.filter(t => !t.done).length;
+                const totalFav = tasks.filter(t => t.favorite).length;
+                allCount.textContent = tasks.length;
+                favCount.textContent = totalFav;
+                taskCount.innerHTML = `<span class="material-icons">format_list_numbered</span> ${totalUndone} of ${tasks.length}`;
+
+                if (filteredTasks.length === 0) {
+                    const emptyLi = document.createElement('li');
+                    emptyLi.className = 'empty-state';
+                    
+                    let emptyImage, emptyTitle, emptySubtext;
+                    if (currentTab === 'favorites') {
+                        emptyImage = 'https://i.postimg.cc/R0pJPzgC/heart.png';
+                        emptyTitle = 'No favorite tasks';
+                        emptySubtext = 'Click the star to add favorites';
+                    } else {
+                        emptyImage = 'https://i.postimg.cc/dtCPWmVs/task.png';
+                        emptyTitle = 'No tasks yet';
+                        emptySubtext = 'Add a new task to get started';
+                    }
+                    
+                    emptyLi.innerHTML = `
+                        <div class="empty-state-content">
+                            <img src="${emptyImage}" alt="No tasks" class="empty-image" />
+                            <div>
+                                <div class="empty-text">${emptyTitle}</div>
+                                <div class="empty-subtext">${emptySubtext}</div>
+                            </div>
+                        </div>
+                    `;
+                    taskList.appendChild(emptyLi);
+                    return;
+                }
+
+                filteredTasks.forEach(task => {
+                    const li = document.createElement('li');
+
+                    const taskContent = document.createElement('div');
+                    taskContent.className = 'task-content';
+                    
+                    const checkbox = createCheckbox(task, function() {
+                        task.done = !task.done;
+                        saveTasks();
+                        render();
+                    });
+                    
+                    const taskInfo = document.createElement('div');
+                    taskInfo.className = 'task-info';
+                    
+                    const taskText = document.createElement('div');
+                    taskText.className = 'task-text' + (task.done ? ' done' : '');
+                    taskText.textContent = task.text;
+                    
+                    taskInfo.appendChild(taskText);
+                    
+                    taskContent.addEventListener('click', function(e) {
+                        if (e.target.tagName !== 'INPUT' && !e.target.closest('.fav-btn') && !e.target.closest('.delete-btn')) {
+                            task.done = !task.done;
+                            saveTasks();
+                            render();
+                        }
+                    });
+                    
+                    taskContent.appendChild(checkbox);
+                    taskContent.appendChild(taskInfo);
+
+                    const taskActions = document.createElement('div');
+                    taskActions.className = 'task-actions';
+                    
+                    const favBtn = document.createElement('button');
+                    favBtn.className = 'fav-btn' + (task.favorite ? ' active' : '');
+                    favBtn.innerHTML = '<span class="material-icons">star</span>';
+                    favBtn.title = task.favorite ? 'Remove from favorites' : 'Add to favorites';
+                    favBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        task.favorite = !task.favorite;
+                        saveTasks();
+                        render();
+                    });
+                    
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'delete-btn';
+                    delBtn.type = 'button';
+                    delBtn.innerHTML = '<span class="material-icons">close</span>';
+                    delBtn.title = 'Delete';
+                    delBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        tasks = tasks.filter(t => t.id !== task.id);
+                        saveTasks();
+                        render();
+                    });
+                    
+                    taskActions.appendChild(favBtn);
+                    taskActions.appendChild(delBtn);
+
+                    li.appendChild(taskContent);
+                    li.appendChild(taskActions);
+                    taskList.appendChild(li);
+                });
+            }
+
+            // --- Add Task ---
+            function addTask() {
+                const text = taskInput.value.trim();
+                
+                if (text === '') {
+                    errorMsg.classList.add('show');
+                    taskInput.focus();
+                    taskInput.style.borderColor = '#a53a3a';
+                    setTimeout(() => {
+                        errorMsg.classList.remove('show');
+                        taskInput.style.borderColor = '#3a3a3a';
+                    }, 2000);
+                    return;
+                }
+
+                errorMsg.classList.remove('show');
+                taskInput.style.borderColor = '#3a3a3a';
+
+                const newTask = {
+                    id: Date.now(),
+                    text: text,
+                    done: false,
+                    favorite: false
+                };
+                tasks.push(newTask);
+                saveTasks();
+                render();
+                taskInput.value = '';
+                taskInput.focus();
+            }
+
+            // --- Clear All ---
+            function clearAll() {
+                const filteredTasks = getFilteredTasks();
+                if (filteredTasks.length === 0) return;
+                
+                let confirmMsg = 'Delete all tasks?';
+                if (currentTab === 'favorites') confirmMsg = 'Delete all favorite tasks?';
+                
+                if (confirm(confirmMsg)) {
+                    if (currentTab === 'favorites') {
+                        tasks = tasks.filter(t => !t.favorite);
+                    } else {
+                        tasks = [];
+                    }
+                    saveTasks();
+                    render();
+                    taskInput.focus();
+                }
+            }
+
+            // --- Tab Change ---
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    currentTab = this.dataset.tab;
+                    render();
+                });
+            });
+
+            // --- Events ---
+            taskInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTask();
+                }
+            });
+
+            taskInput.addEventListener('input', function() {
+                errorMsg.classList.remove('show');
+                taskInput.style.borderColor = '#3a3a3a';
+            });
+
+            addBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                addTask();
+            });
+
+            clearBtn.addEventListener('click', clearAll);
+
+            // --- Init ---
+            loadData();
+            render();
+            taskInput.focus();
+        })();
+    </script>
+</body>
+</html>
